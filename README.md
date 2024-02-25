@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Assesement for Candidates applying for the position of SE(ROR)
 
 Please follow the instructions below to complete the tasks and showcase your proficiency in Ruby on Rails. This assesement will be focussed on refactoring and code optimization techniques.
@@ -75,3 +76,6 @@ Candidates will be evaluated based on the following criteria:
 - **Documentation:** As mentioned in the Submission instructions the Pull Requests should have summary of related changes and why that change was required. All of this should be properly documented
 
 Good luck! If you have any questions or need clarification, feel free to reach out.
+=======
+# Staunch-ROR
+>>>>>>> origin/main
