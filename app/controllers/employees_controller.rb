@@ -1,89 +1,48 @@
 require 'net/http'
-require 'net/https'
-
+require 'json'
 class EmployeesController < ApplicationController
   before_action :authenticate_user!
+  before_action :set_employee_api_service, only: %i[index show create update edit]
+
+  def index
+    @employees = @employee_api_service.index(params[:page])
+  end  
+
+  def edit
+    @employee = @employee_api_service.show(params[:id])
+  end
+
+  def show
+    @employee = @employee_api_service.show(params[:id])
+  end
+
+  def create
+    response = @employee_api_service.create(employee_params)
+    handle_response(response, success_flash: 'Employee created successfully')
+  end
   
-    def index
-      if params[:page].present?
-        uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees?page=#{params[:page]}")
-      else
-        uri = URI('https://dummy-employees-api-8bad748cda19.herokuapp.com/employees')
-      end
-      @response = Net::HTTP.get(uri)
-      @employees = JSON.parse(@response)
+  def update
+    response = @employee_api_service.update(params[:id], employee_params)
+    handle_response(response, success_flash: 'Employee updated successfully')
+  end 
+
+  private
+
+  def set_employee_api_service
+    @employee_api_service ||= EmployeeApiService.new
+  end
+
+  def employee_params
+    params.permit(:name, :position, :date_of_birth, :salary)
+  end
+
+  def handle_response(response, success_flash:)
+    if response[:code].to_i / 100 == 2
+      flash[:success] = success_flash
+      redirect_to action: :index
+    else
+      flash[:error] = "API Error: Response Code - #{response[:code]}, Response Body - #{response[:body]}"
+      redirect_back fallback_location: root_path
     end
-  
-    def edit
-      uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees/#{params[:id]}")
-      @response = Net::HTTP.get(uri)
-      @employee = JSON.parse(@response)
-    end
-
-    def show
-      uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees/#{params[:id]}")
-      @response = Net::HTTP.get(uri)
-      @employee = JSON.parse(@response)
-    end
-
-    def create
-      uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees/#{params[:id]}")
-
-
-      http = Net::HTTP.new(uri.host, uri.port)
-
-      http.use_ssl = (uri.scheme == 'https')
-
-      request = Net::HTTP::Post.new(uri.path)
-
-      request['Content-Type'] = 'application/json'
-
-      body = {
-        "name": params[:name],
-        "position": params[:position],
-        "date_of_birth": params[:date_of_birth],
-        "salary": params[:salary]
-      }.to_json
-      request.body = body
-
-      response = http.request(request)
-
-      puts "Response Code: #{response.code}"
-      puts "Response Body: #{response.body}"
-
-      @employee = JSON.parse(response.body)
-
-      redirect_to employee_path(@employee.dig("id"))
-    end
-  
-    def update
-
-      uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees/#{params[:id]}")
-
-
-      http = Net::HTTP.new(uri.host, uri.port)
-
-      http.use_ssl = (uri.scheme == 'https')
-
-      request = Net::HTTP::Put.new(uri.path)
-
-      request['Content-Type'] = 'application/json'
-
-      body = {
-        "name": params[:name],
-        "position": params[:position],
-        "date_of_birth": params[:date_of_birth],
-        "salary": params[:salary]
-      }.to_json
-      request.body = body
-
-      response = http.request(request)
-
-      puts "Response Code: #{response.code}"
-      puts "Response Body: #{response.body}"
-
-      @employee = JSON.parse(response.body)
-
-      redirect_to edit_employee_path(@employee.dig("id"))
-    end  
+  end
 end

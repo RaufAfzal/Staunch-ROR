@@ -1,18 +1,19 @@
+<% @employees_data = JSON.parse(@employee[:body]) %>
 <table class="table">
   <tr>
     <th>Name</th>
-    <td><%= @employee.dig("name") %></td>
+    <td><%= @employees_data["name"] %></td>
   </tr>
   <tr>
     <th>Position</th>
-    <td><%= @employee.dig("position") %></td>
+    <td><%= @employees_data["position"] %></td>
   </tr>
   <tr>
     <th>Salary</th>  
-    <td><%= @employee.dig("salary") %></td>
+    <td><%= @employees_data["salary"] %></td>
   </tr>
   <tr>
     <th>Date of Birth</th>  
-    <td><%= @employee.dig("date_of_birth") %></td>
+    <td><%= @employees_data["date_of_birth"] %></td>
   </tr>
 </table>

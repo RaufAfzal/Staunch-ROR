@@ -63,18 +63,23 @@ class BlogsController < ApplicationController
 
   def import
     file = params[:attachment]
-    data = CSV.parse(file.to_io, headers: true, encoding: 'utf8')
-    # Start code to handle CSV data
-    ActiveRecord::Base.transaction do
-      data.each do |row|
-        current_user.blogs.create!(row.to_h)
-      end
-    end
-    # End code to handle CSV data
-    redirect_to blogs_path
+    file_path = Rails.root.join('tmp', file.original_filename)
+    CsvProcessingWorker.perform_async(file_path.to_s, current_user.id)
+    flash[:success] = "Your blogs will be created in a while"
+    redirect_to blogs_path       
   end
 
   private
+
+  def processBatch(batch)
+    ActiveRecord::Base.transaction do
+      batch.each do |row|
+        filtered_data = row.to_h.slice("user_id", "body", "title")
+        current_user.blogs.create!(filtered_data) 
+      end
+    end
+  end
+
     # Use callbacks to share common setup or constraints between actions.
     def set_blog
       @blog = current_user.blogs.find(params[:id])
